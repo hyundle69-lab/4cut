@@ -1,3 +1,5 @@
+import { applyFaceRetouchIfAvailable } from "./faceRetouch";
+
 export const LIFE4CUT_FILTER_ENABLED = true;
 export const PHOTOISM_FILTER_STRENGTH = 0.8;
 
@@ -49,23 +51,6 @@ const applyStudioTone = (canvas, strength) => {
   ctx.putImageData(imageData, 0, 0);
 };
 
-const applySoftSkin = (canvas, strength) => {
-  const ctx = canvas.getContext("2d");
-  const glowCanvas = document.createElement("canvas");
-  glowCanvas.width = canvas.width;
-  glowCanvas.height = canvas.height;
-
-  const glowCtx = glowCanvas.getContext("2d");
-  glowCtx.filter = "blur(6px)";
-  glowCtx.drawImage(canvas, 0, 0);
-
-  ctx.save();
-  ctx.globalAlpha = mix(0, 0.18, strength);
-  ctx.globalCompositeOperation = "screen";
-  ctx.drawImage(glowCanvas, 0, 0);
-  ctx.restore();
-};
-
 const applyStudioLight = (canvas, strength) => {
   const ctx = canvas.getContext("2d");
   const centerX = canvas.width / 2;
@@ -113,7 +98,7 @@ const applyMildSharpen = (canvas, strength) => {
   ctx.putImageData(output, 0, 0);
 };
 
-export const applyLife4CutFilter = (sourceCanvas) => {
+export const applyLife4CutFilter = async (sourceCanvas) => {
   const filteredCanvas = document.createElement("canvas");
   filteredCanvas.width = sourceCanvas.width;
   filteredCanvas.height = sourceCanvas.height;
@@ -128,8 +113,8 @@ export const applyLife4CutFilter = (sourceCanvas) => {
   const strength = Math.max(0, Math.min(1, PHOTOISM_FILTER_STRENGTH));
 
   applyStudioTone(filteredCanvas, strength);
-  applySoftSkin(filteredCanvas, strength);
   applyStudioLight(filteredCanvas, strength);
+  await applyFaceRetouchIfAvailable(filteredCanvas);
   applyMildSharpen(filteredCanvas, strength);
 
   return filteredCanvas;

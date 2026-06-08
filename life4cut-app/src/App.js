@@ -207,7 +207,7 @@ export default function App() {
     });
   }, [selectedFrame]);
 
-  const capturePhoto = useCallback(() => {
+  const capturePhoto = useCallback(async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
@@ -229,7 +229,7 @@ export default function App() {
 
     drawZoomedVideoToCanvas(video, canvas);
 
-    const filteredCanvas = filterEnabled ? applyLife4CutFilter(canvas) : canvas;
+    const filteredCanvas = filterEnabled ? await applyLife4CutFilter(canvas) : canvas;
     const imgData = filteredCanvas.toDataURL("image/png");
 
     setPhotos((currentPhotos) => {
