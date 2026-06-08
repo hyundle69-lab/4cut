@@ -1,8 +1,8 @@
 body {
   margin: 0;
-  font-family: 'Courier New', serif;
-  background: #fff7f3;
-  color: #3f352f;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #fafaf8;
+  color: #111;
 }
 
 button {
@@ -13,18 +13,19 @@ button {
   min-height: 100vh;
   min-height: 100dvh;
   box-sizing: border-box;
-  padding: 18px;
+  padding: 24px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 246, 241, 0.96)),
-    #fff7f3;
+    radial-gradient(circle at top, rgba(215, 198, 164, 0.16), transparent 38%),
+    #fafaf8;
   text-align: center;
+  animation: pageFade 420ms ease-out;
 }
 
 .booth-home,
 .camera-stage,
 .result-stage {
   display: flex;
-  min-height: calc(100dvh - 36px);
+  min-height: calc(100dvh - 48px);
   align-items: center;
   justify-content: center;
 }
@@ -32,11 +33,17 @@ button {
 .booth-card {
   width: min(100%, 520px);
   box-sizing: border-box;
-  border: 1px solid rgba(255, 172, 181, 0.38);
-  border-radius: 28px;
-  padding: 28px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 42px rgba(176, 116, 94, 0.14);
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 24px;
+  padding: 36px 34px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.08);
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.booth-card:hover {
+  box-shadow: 0 28px 72px rgba(17, 17, 17, 0.11);
+  transform: translateY(-2px);
 }
 
 .home-card {
@@ -46,67 +53,78 @@ button {
 }
 
 .booth-kicker {
-  margin: 0 0 8px;
-  color: #e36f82;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0;
+  margin: 0 0 12px;
+  color: #9a835f;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
 }
 
 .booth-title {
+  max-width: 420px;
   margin: 0;
-  color: #3f352f;
-  font-size: clamp(38px, 9vw, 58px);
-  line-height: 1;
+  color: #111;
+  font-size: clamp(42px, 8vw, 64px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: 0;
 }
 
 .booth-subtitle {
-  margin: 12px 0 22px;
-  color: #7a6259;
+  margin: 16px 0 30px;
+  color: #777;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 400;
+  letter-spacing: 0.04em;
 }
 
 .booth-preview {
   display: grid;
-  width: min(58vw, 178px);
-  aspect-ratio: 1 / 3.25;
+  width: min(52vw, 190px);
+  aspect-ratio: 1 / 3.35;
   box-sizing: border-box;
   grid-template-rows: repeat(4, 1fr);
-  gap: 7px;
-  border-radius: 18px;
-  padding: 12px;
-  background: #12100f;
-  box-shadow: 0 16px 28px rgba(35, 28, 25, 0.22);
+  gap: 8px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 24px;
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(17, 17, 17, 0.12);
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.booth-preview:hover {
+  box-shadow: 0 24px 54px rgba(17, 17, 17, 0.15);
+  transform: translateY(-2px);
 }
 
 .booth-preview span {
-  border-radius: 10px;
-  background:
-    linear-gradient(135deg, rgba(255, 207, 215, 0.95), rgba(255, 246, 202, 0.95)),
-    #ffe3e9;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f4efe7, #fbfaf7);
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.05);
 }
 
 .booth-main-button {
-  width: min(100%, 330px);
+  width: min(100%, 350px);
   min-height: 58px;
-  margin-top: 24px;
+  margin-top: 30px;
   border: 0;
   border-radius: 999px;
-  background: #ff8fa3;
+  background: #111;
   color: #fff;
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   cursor: pointer;
-  box-shadow: 0 12px 22px rgba(255, 143, 163, 0.32);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 16px 32px rgba(17, 17, 17, 0.16);
+  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
   touch-action: manipulation;
 }
 
 .booth-main-button:hover {
-  background: #ff7e96;
-  transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(255, 143, 163, 0.38);
+  background: #2a2926;
+  transform: translateY(-3px);
+  box-shadow: 0 20px 42px rgba(17, 17, 17, 0.2);
 }
 
 .booth-main-button:active,
@@ -119,41 +137,83 @@ button {
   display: grid;
   width: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .booth-toggle {
+  position: relative;
   display: flex;
-  min-height: 58px;
+  min-height: 72px;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: 3px;
-  border: 1px solid rgba(106, 87, 78, 0.12);
+  gap: 9px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 18px;
-  background: #fff8f6;
-  color: #7a6259;
-  font-size: 13px;
-  font-weight: 800;
+  padding: 0 14px;
+  background: #faf9f6;
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: border 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  transition: border 200ms ease, background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
   touch-action: manipulation;
 }
 
+.booth-toggle::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  bottom: 14px;
+  width: 34px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ded8cd;
+  transition: background 200ms ease;
+}
+
+.booth-toggle::before {
+  content: "";
+  position: absolute;
+  right: 30px;
+  bottom: 17px;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.18);
+  transition: right 200ms ease;
+}
+
+.booth-toggle span {
+  text-align: left;
+}
+
 .booth-toggle strong {
-  color: #b9a39b;
-  font-size: 15px;
+  color: #9c9489;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
 }
 
 .booth-toggle.on {
-  border-color: rgba(255, 143, 163, 0.56);
-  background: #fff0f3;
-  color: #bf5267;
+  border-color: rgba(174, 148, 105, 0.38);
+  background: #f7f4ef;
+  box-shadow: 0 10px 22px rgba(174, 148, 105, 0.09);
+}
+
+.booth-toggle.on::after {
+  background: #b59b6a;
+}
+
+.booth-toggle.on::before {
+  right: 16px;
 }
 
 .booth-toggle.on strong {
-  color: #ff6f89;
+  color: #8e7448;
 }
 
 .booth-view,
@@ -163,7 +223,7 @@ button {
 
 .camera-stage {
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .capture-header {
@@ -172,40 +232,48 @@ button {
   box-sizing: border-box;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  border-radius: 22px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 10px 24px rgba(176, 116, 94, 0.1);
+  gap: 12px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 20px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.06);
 }
 
 .capture-header p {
   margin: 0;
-  color: #8a7066;
-  font-size: 13px;
-  font-weight: 800;
+  color: #777;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-align: right;
 }
 
 .capture-progress {
-  min-width: 74px;
+  min-width: 82px;
   border-radius: 999px;
   padding: 9px 14px;
-  background: #3f352f;
+  background: #111;
   color: #fff;
-  font-size: 18px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   line-height: 1;
 }
 
 .camera-preview-card {
   width: min(100%, 520px);
   box-sizing: border-box;
-  border: 1px solid rgba(255, 172, 181, 0.34);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 28px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 18px 38px rgba(176, 116, 94, 0.15);
+  padding: 12px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.11);
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.camera-preview-card:hover {
+  box-shadow: 0 28px 72px rgba(17, 17, 17, 0.14);
 }
 
 .camera-wrap {
@@ -213,8 +281,8 @@ button {
   width: min(82vw, 470px, 58dvh);
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 22px;
-  background: #fff1eb;
+  border-radius: 28px;
+  background: #f7f4ef;
 }
 
 .camera-video {
@@ -261,16 +329,17 @@ button {
   position: absolute;
   inset: 0;
   z-index: 4;
-  border: 4px solid rgba(255, 143, 163, 0.92);
+  border: 3px solid rgba(181, 155, 106, 0.88);
   box-sizing: border-box;
   pointer-events: none;
+  transition: opacity 180ms ease;
 }
 
 .camera-error {
   max-width: min(90vw, 520px);
   margin: 0;
   color: #9b2226;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .thumbnail-strip,
@@ -285,18 +354,18 @@ button {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 2px dashed rgba(122, 98, 89, 0.22);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(122, 98, 89, 0.48);
-  font-size: 18px;
-  font-weight: 900;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.54);
+  background: rgba(255, 255, 255, 0.76);
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 .thumbnail-slot.filled {
-  border-style: solid;
-  border-color: rgba(255, 143, 163, 0.72);
+  border-color: rgba(181, 155, 106, 0.48);
+  box-shadow: 0 10px 22px rgba(17, 17, 17, 0.07);
 }
 
 .thumbnail-slot img {
@@ -325,19 +394,20 @@ button {
 
 .button {
   min-height: 52px;
-  padding: 13px 20px;
-  border: 0;
+  padding: 13px 22px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 999px;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease, background 200ms ease;
   touch-action: manipulation;
 }
 
 .button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(176, 116, 94, 0.18);
+  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.11);
 }
 
 .button:disabled {
@@ -346,30 +416,61 @@ button {
 }
 
 .capture-button {
-  flex: 1 1 210px;
-  min-height: 60px;
-  font-size: 19px;
+  display: inline-flex;
+  width: 84px;
+  min-width: 84px;
+  height: 84px;
+  min-height: 84px;
+  flex: 0 0 84px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid #111;
+  border-radius: 50%;
+  background: #fff;
+  color: transparent;
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.14);
+}
+
+.capture-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.shutter-icon {
+  width: 58px;
+  height: 58px;
+  border: 2px solid #111;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: inset 0 0 0 9px #fff;
+}
+
+.capture-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
 }
 
 .primary {
-  background: #ffcc70;
-  color: #4a3b32;
+  background: #111;
+  color: #fff;
 }
 
 .accent {
-  background: #ff8fa3;
+  background: #111;
   color: #fff;
 }
 
 .gray {
-  background: #f0e6e1;
-  color: #5d4b43;
+  background: #f7f4ef;
+  color: #111;
 }
 
 .soft {
   background: #fff;
-  color: #7a6259;
-  border: 1px solid rgba(122, 98, 89, 0.12);
+  color: #777;
 }
 
 .flash-overlay {
@@ -388,49 +489,63 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(63, 53, 47, 0.42);
+  background: rgba(17, 17, 17, 0.42);
   pointer-events: none;
 }
 
 .countdown-number {
   color: #fff;
   font-size: clamp(100px, 28vw, 160px);
-  font-weight: 900;
+  font-weight: 300;
   line-height: 1;
-  text-shadow: 0 8px 22px rgba(63, 53, 47, 0.22);
+  text-shadow: 0 8px 22px rgba(17, 17, 17, 0.24);
   animation: countdownPop 850ms ease-out forwards;
 }
 
 .result-stage {
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
 .result-stage h2 {
   margin: 0;
-  color: #3f352f;
-  font-size: clamp(24px, 6vw, 34px);
-  line-height: 1.2;
+  color: #111;
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
 }
 
 .result-preview-card {
-  width: min(86vw, 360px);
-  max-height: calc(100dvh - 210px);
+  width: min(84vw, 360px);
+  max-height: calc(100dvh - 220px);
   box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid rgba(255, 172, 181, 0.34);
-  border-radius: 26px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 38px rgba(176, 116, 94, 0.16);
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 24px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 28px 72px rgba(17, 17, 17, 0.16);
+  transform: translateY(-2px);
 }
 
 .result-image {
   display: block;
   width: 100%;
-  max-height: calc(100dvh - 240px);
+  max-height: calc(100dvh - 252px);
   object-fit: contain;
-  border-radius: 16px;
+  border-radius: 12px;
+}
+
+@keyframes pageFade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes countdownPop {
@@ -459,18 +574,21 @@ button {
 
 @media (max-width: 560px) {
   .app-shell {
-    padding: 12px;
+    padding: 14px;
   }
 
   .booth-home,
   .camera-stage,
   .result-stage {
-    min-height: calc(100dvh - 24px);
+    min-height: calc(100dvh - 28px);
   }
 
   .booth-card {
-    padding: 22px 16px;
-    border-radius: 24px;
+    padding: 28px 18px;
+  }
+
+  .booth-title {
+    font-size: clamp(38px, 12vw, 52px);
   }
 
   .booth-setting-row {
@@ -478,16 +596,23 @@ button {
   }
 
   .booth-toggle {
-    min-height: 50px;
+    min-height: 56px;
     flex-direction: row;
+    align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 58px 0 16px;
+  }
+
+  .booth-toggle::before,
+  .booth-toggle::after {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
   }
 
   .capture-header {
     align-items: flex-start;
     flex-direction: column;
-    border-radius: 20px;
   }
 
   .capture-header p {
@@ -496,12 +621,11 @@ button {
 
   .camera-preview-card {
     padding: 10px;
-    border-radius: 24px;
   }
 
   .camera-wrap {
     width: min(92vw, 50dvh);
-    border-radius: 20px;
+    border-radius: 24px;
   }
 
   .controls,
@@ -513,15 +637,18 @@ button {
     flex: 1 1 132px;
     min-height: 50px;
     padding: 12px 14px;
-    font-size: 15px;
   }
 
   .capture-button {
-    flex-basis: 100%;
+    flex: 0 0 80px;
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    min-height: 80px;
   }
 
   .result-preview-card {
     width: min(82vw, 320px);
-    max-height: calc(100dvh - 220px);
+    max-height: calc(100dvh - 230px);
   }
 }

@@ -349,7 +349,7 @@ export default function App() {
     }
   };
 
-  const settingSummary = `Timer ${timerEnabled ? "ON" : "OFF"} · Flash ${flashEnabled ? "ON" : "OFF"} · Filter ${filterEnabled ? "ON" : "OFF"}`;
+  const settingSummary = `Timer ${timerEnabled ? "ON" : "OFF"} · Flash ${flashEnabled ? "ON" : "OFF"} · Beauty ${filterEnabled ? "ON" : "OFF"}`;
 
   const renderSettingToggle = (label, enabled, onChange) => (
     <button
@@ -377,8 +377,8 @@ export default function App() {
         <section className="booth-home">
           <div className="booth-card home-card">
             <p className="booth-kicker">PHOTO BOOTH</p>
-            <h1 className="booth-title">LIFE 4 CUT</h1>
-            <p className="booth-subtitle">네 컷으로 남기는 오늘의 순간</p>
+            <h1 className="booth-title">Life in Four Cuts</h1>
+            <p className="booth-subtitle">Capture your moment</p>
 
             <div className="booth-preview" aria-hidden="true">
               {[1, 2, 3, 4].map((item) => (
@@ -386,32 +386,32 @@ export default function App() {
               ))}
             </div>
 
-            <button className="booth-main-button" onClick={startSession}>촬영 시작</button>
+            <button className="booth-main-button" onClick={startSession}>START PHOTO SESSION</button>
 
             <div className="booth-setting-row" aria-label="촬영 설정">
               {renderSettingToggle("Timer", timerEnabled, setTimerEnabled)}
               {renderSettingToggle("Flash", flashEnabled, setFlashEnabled)}
-              {renderSettingToggle("Filter", filterEnabled, setFilterEnabled)}
+              {renderSettingToggle("Beauty Filter", filterEnabled, setFilterEnabled)}
             </div>
           </div>
         </section>
       ) : mergedImage ? (
         <section className="result-stage result-view">
-          <h2>사진이 완성되었습니다</h2>
+          <h2>Your Moment is Ready</h2>
           <div className="result-preview-card">
             <img className="result-image" src={mergedImage} alt="네컷" />
           </div>
           <div className="result-actions">
-            <button className="button gray" onClick={resetPhotos}>다시 찍기</button>
-            <button className="button accent" onClick={() => downloadImage(mergedImage)}>저장하기</button>
-            <button className="button primary" onClick={shareImage}>공유하기</button>
-            <button className="button soft" onClick={goHome}>홈으로</button>
+            <button className="button gray" onClick={resetPhotos}>RETAKE</button>
+            <button className="button accent" onClick={() => downloadImage(mergedImage)}>SAVE</button>
+            <button className="button primary" onClick={shareImage}>SHARE</button>
+            <button className="button soft" onClick={goHome}>HOME</button>
           </div>
         </section>
       ) : (
         <section className="camera-stage booth-view">
           <div className="capture-header">
-            <div className="capture-progress">{Math.min(photos.length + 1, PHOTO_COUNT)} / {PHOTO_COUNT}</div>
+            <div className="capture-progress">{String(Math.min(photos.length + 1, PHOTO_COUNT)).padStart(2, "0")} / 04</div>
             <p>{settingSummary}</p>
           </div>
 
@@ -445,10 +445,11 @@ export default function App() {
 
           <div className="controls">
             <button className="button accent capture-button" onClick={takePhoto} disabled={photos.length >= PHOTO_COUNT || countdown > 0}>
-              촬영하기
+              <span className="shutter-icon" aria-hidden="true" />
+              <span className="capture-label">CAPTURE</span>
             </button>
-            <button className="button gray" onClick={resetPhotos}>다시 시작</button>
-            <button className="button soft" onClick={goHome}>홈으로</button>
+            <button className="button gray" onClick={resetPhotos}>RESTART</button>
+            <button className="button soft" onClick={goHome}>HOME</button>
           </div>
         </section>
       )}
