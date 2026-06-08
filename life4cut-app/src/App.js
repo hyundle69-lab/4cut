@@ -4,6 +4,7 @@ import { applyLife4CutFilter } from "./utils/photoFilter";
 
 const PHOTO_COUNT = 4;
 const CAPTURE_SIZE = 600;
+const CAMERA_ZOOM_FACTOR = 1.18;
 const FRAME_WIDTH = 600;
 const FRAME_HEIGHT = 2400;
 const PHOTO_SIDE = 560;
@@ -95,6 +96,7 @@ export default function App() {
           facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 1280 },
+          aspectRatio: { ideal: 1 },
         },
       });
 
@@ -190,15 +192,15 @@ export default function App() {
     }
     setShowSquareCamera(true);
 
-    const side = Math.min(videoWidth, videoHeight);
-    const sx = (videoWidth - side) / 2;
-    const sy = (videoHeight - side) / 2;
+    const sourceSize = Math.min(videoWidth, videoHeight) / CAMERA_ZOOM_FACTOR;
+    const sx = (videoWidth - sourceSize) / 2;
+    const sy = (videoHeight - sourceSize) / 2;
 
     ctx.clearRect(0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
     ctx.save();
     ctx.scale(-1, 1);
     ctx.translate(-CAPTURE_SIZE, 0);
-    ctx.drawImage(video, sx, sy, side, side, 0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
+    ctx.drawImage(video, sx, sy, sourceSize, sourceSize, 0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
     ctx.restore();
 
     const filteredCanvas = filterEnabled ? applyLife4CutFilter(canvas) : canvas;
@@ -396,6 +398,7 @@ export default function App() {
                 width="320"
                 height="320"
                 className="camera-video"
+                style={{ "--camera-zoom": CAMERA_ZOOM_FACTOR }}
               />
               <div className="face-guide" />
               {showSquareCamera && <div className="capture-outline" />}
