@@ -54,6 +54,35 @@ const applySoftGlow = (canvas, sourceCanvas) => {
   ctx.restore();
 };
 
+const applySubtleSharpen = (canvas) => {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const source = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const output = ctx.createImageData(source);
+  const { width, height } = canvas;
+  const strength = 0.18;
+
+  output.data.set(source.data);
+
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const index = (y * width + x) * 4;
+
+      for (let channel = 0; channel < 3; channel += 1) {
+        const center = source.data[index + channel];
+        const top = source.data[index - width * 4 + channel];
+        const right = source.data[index + 4 + channel];
+        const bottom = source.data[index + width * 4 + channel];
+        const left = source.data[index - 4 + channel];
+        const edge = center * 4 - top - right - bottom - left;
+
+        output.data[index + channel] = clampChannel(center + edge * strength);
+      }
+    }
+  }
+
+  ctx.putImageData(output, 0, 0);
+};
+
 export const applyLife4CutFilter = (sourceCanvas) => {
   const filteredCanvas = document.createElement("canvas");
   filteredCanvas.width = sourceCanvas.width;
@@ -68,6 +97,7 @@ export const applyLife4CutFilter = (sourceCanvas) => {
 
   applyToneAdjustments(filteredCanvas);
   applySoftGlow(filteredCanvas, sourceCanvas);
+  applySubtleSharpen(filteredCanvas);
 
   return filteredCanvas;
 };
