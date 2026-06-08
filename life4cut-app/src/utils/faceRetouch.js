@@ -1,6 +1,8 @@
-export const FACE_SKIN_SMOOTHING_STRENGTH = 0.22;
+export const FACE_SKIN_SMOOTHING_STRENGTH = 0.12;
 export const FACE_MASK_FEATHER = 18;
 const TARGET_FACE_LUMINANCE = 178;
+const FACE_BRIGHTNESS_BOOST_MAX = 1.06;
+const FACE_DEBUG_MODE = false;
 
 const VISION_WASM_BASE_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
 const VISION_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/+esm";
@@ -11,6 +13,7 @@ let detector = null;
 let detectorPromise = null;
 let hasWarnedLoadFailure = false;
 let hasWarnedDetectFailure = false;
+let hasWarnedInvalidFace = false;
 
 const canInitializeMediaPipe = () => {
   return (
@@ -24,9 +27,11 @@ const canInitializeMediaPipe = () => {
 const warnOnce = (type, message, error) => {
   if (type === "load" && hasWarnedLoadFailure) return;
   if (type === "detect" && hasWarnedDetectFailure) return;
+  if (type === "invalid" && hasWarnedInvalidFace) return;
 
   if (type === "load") hasWarnedLoadFailure = true;
   if (type === "detect") hasWarnedDetectFailure = true;
+  if (type === "invalid") hasWarnedInvalidFace = true;
 
   console.warn(message, error);
 };
@@ -80,6 +85,29 @@ const clampBoxToCanvas = (box, canvas) => {
   return { originX, originY, width, height };
 };
 
+const isValidFaceDetection = (detection, canvas) => {
+  if (!detection?.boundingBox) return false;
+
+  const box = clampBoxToCanvas(detection.boundingBox, canvas);
+  const centerX = box.originX + box.width / 2;
+  const centerY = box.originY + box.height / 2;
+  const minWidth = canvas.width * 0.15;
+  const minHeight = canvas.height * 0.15;
+  const maxWidth = canvas.width * 0.8;
+  const maxHeight = canvas.height * 0.8;
+
+  return (
+    box.width >= minWidth &&
+    box.height >= minHeight &&
+    box.width <= maxWidth &&
+    box.height <= maxHeight &&
+    centerX >= 0 &&
+    centerX <= canvas.width &&
+    centerY >= 0 &&
+    centerY <= canvas.height
+  );
+};
+
 const keypointToCanvasPoint = (keypoint, canvas) => ({
   x: keypoint.x * canvas.width,
   y: keypoint.y * canvas.height,
@@ -121,8 +149,8 @@ const createFaceMask = (canvas, boundingBox, detection) => {
 
   const centerX = faceBox.originX + faceBox.width / 2;
   const centerY = faceBox.originY + faceBox.height * 0.47;
-  const radiusX = faceBox.width * 0.5;
-  const radiusY = faceBox.height * 0.62;
+  const radiusX = faceBox.width * 0.41;
+  const radiusY = faceBox.height * 0.45;
   const feather = Math.max(FACE_MASK_FEATHER, Math.min(radiusX, radiusY) * 0.2);
 
   maskCtx.save();
@@ -179,7 +207,9 @@ const applyFaceExposure = (canvas, boundingBox, maskCanvas, strength) => {
   const averageLuminance = getFaceAverageLuminance(canvas, boundingBox);
   if (averageLuminance >= TARGET_FACE_LUMINANCE) return;
 
-  const lift = Math.min(0.16, ((TARGET_FACE_LUMINANCE - averageLuminance) / TARGET_FACE_LUMINANCE) * 0.38) * strength;
+  const calculatedBoost = 1 + ((TARGET_FACE_LUMINANCE - averageLuminance) / TARGET_FACE_LUMINANCE) * 0.18 * strength;
+  const exposureBoost = Math.min(calculatedBoost, FACE_BRIGHTNESS_BOOST_MAX);
+  const lift = exposureBoost - 1;
   const exposureCanvas = document.createElement("canvas");
   exposureCanvas.width = canvas.width;
   exposureCanvas.height = canvas.height;
@@ -190,9 +220,9 @@ const applyFaceExposure = (canvas, boundingBox, maskCanvas, strength) => {
   const { data } = imageData;
 
   for (let i = 0; i < data.length; i += 4) {
-    data[i] = Math.min(255, data[i] * (1 + lift) + lift * 12);
-    data[i + 1] = Math.min(255, data[i + 1] * (1 + lift) + lift * 12);
-    data[i + 2] = Math.min(255, data[i + 2] * (1 + lift) + lift * 14);
+    data[i] = Math.min(255, data[i] * exposureBoost + lift * 8);
+    data[i + 1] = Math.min(255, data[i + 1] * exposureBoost + lift * 8);
+    data[i + 2] = Math.min(255, data[i + 2] * exposureBoost + lift * 9);
   }
 
   exposureCtx.putImageData(imageData, 0, 0);
@@ -204,6 +234,10 @@ const applyFaceExposure = (canvas, boundingBox, maskCanvas, strength) => {
   ctx.globalAlpha = 0.82;
   ctx.drawImage(exposureCanvas, 0, 0);
   ctx.restore();
+
+  if (FACE_DEBUG_MODE) {
+    console.log("face brightness", averageLuminance, "boost", exposureBoost);
+  }
 };
 
 const applyMaskedSoftSkin = (canvas, maskCanvas) => {
@@ -233,11 +267,29 @@ export const applyFaceRetouchIfAvailable = async (canvas, strength = 1) => {
 
     const result = faceDetector.detect(canvas);
     const detection = getPrimaryFaceBox(result?.detections);
-    if (!detection?.boundingBox) return null;
+    if (!isValidFaceDetection(detection, canvas)) {
+      warnOnce("invalid", "MediaPipe face retouch skipped. Invalid or missing face box.");
+      return null;
+    }
+
+    if (FACE_DEBUG_MODE) {
+      console.log("face box", detection.boundingBox, "confidence", detection.categories?.[0]?.score);
+    }
 
     const maskCanvas = createFaceMask(canvas, detection.boundingBox, detection);
     applyFaceExposure(canvas, detection.boundingBox, maskCanvas, strength);
     applyMaskedSoftSkin(canvas, maskCanvas);
+
+    if (FACE_DEBUG_MODE) {
+      const ctx = canvas.getContext("2d");
+      const box = clampBoxToCanvas(detection.boundingBox, canvas);
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 160, 255, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(box.originX, box.originY, box.width, box.height);
+      ctx.restore();
+    }
+
     return clampBoxToCanvas(detection.boundingBox, canvas);
   } catch (error) {
     warnOnce("detect", "MediaPipe face retouch failed. Using base Photoism filter only.", error);

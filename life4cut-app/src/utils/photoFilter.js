@@ -1,8 +1,9 @@
 import { applyFaceRetouchIfAvailable } from "./faceRetouch";
 
 export const LIFE4CUT_FILTER_ENABLED = true;
-export const PHOTOISM_FILTER_STRENGTH = 0.8;
+export const PHOTOISM_FILTER_STRENGTH = 0.7;
 export const SELECTED_PHOTOISM_PRESET = "cleanWhite";
+const STUDIO_LIGHT_OPACITY = 0.07;
 
 export const PHOTOISM_PRESETS = {
   cleanWhite: {
@@ -55,8 +56,8 @@ const applyStudioTone = (canvas, strength, preset) => {
   const red = mix(1, preset.red, strength);
   const green = mix(1, preset.green, strength);
   const blue = mix(1, preset.blue, strength);
-  const highlightLift = 0.05 * strength;
-  const shadowLift = 7.65 * strength;
+  const highlightLift = 0.035 * strength;
+  const shadowLift = 5.5 * strength;
 
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i];
@@ -99,8 +100,8 @@ const applyStudioLight = (canvas, strength, faceBox) => {
   const radius = Math.max(canvas.width, canvas.height) * 0.72;
   const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
 
-  gradient.addColorStop(0, `rgba(255, 255, 255, ${0.14 * strength})`);
-  gradient.addColorStop(0.52, `rgba(255, 255, 255, ${0.045 * strength})`);
+  gradient.addColorStop(0, `rgba(255, 255, 255, ${STUDIO_LIGHT_OPACITY * strength})`);
+  gradient.addColorStop(0.52, `rgba(255, 255, 255, ${0.028 * strength})`);
   gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
 
   ctx.save();
@@ -110,7 +111,7 @@ const applyStudioLight = (canvas, strength, faceBox) => {
   ctx.restore();
 
   const topLight = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.48);
-  topLight.addColorStop(0, `rgba(255, 255, 255, ${0.08 * strength})`);
+  topLight.addColorStop(0, `rgba(255, 255, 255, ${0.045 * strength})`);
   topLight.addColorStop(1, "rgba(255, 255, 255, 0)");
 
   ctx.save();
