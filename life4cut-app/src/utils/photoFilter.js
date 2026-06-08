@@ -1,51 +1,45 @@
-import { applyFaceRetouchIfAvailable } from "./faceRetouch";
-
 export const LIFE4CUT_FILTER_ENABLED = true;
-export const PHOTOISM_FILTER_STRENGTH = 0.7;
+export const PHOTOISM_FILTER_STRENGTH = 0.75;
 export const SELECTED_PHOTOISM_PRESET = "cleanWhite";
-const STUDIO_LIGHT_OPACITY = 0.07;
 
 export const PHOTOISM_PRESETS = {
   cleanWhite: {
-    brightness: 1.12,
-    contrast: 1.03,
-    saturation: 1.06,
-    red: 1.02,
-    green: 1.02,
-    blue: 1.05,
-  },
-  softPink: {
-    brightness: 1.13,
-    contrast: 1.01,
-    saturation: 1.08,
-    red: 1.05,
-    green: 1.02,
-    blue: 1.04,
-  },
-  warmStudio: {
     brightness: 1.1,
     contrast: 1.04,
     saturation: 1.07,
-    red: 1.04,
-    green: 1.025,
-    blue: 1.01,
+    red: 1.015,
+    green: 1.015,
+    blue: 1.035,
+    glowOpacity: 0.12,
+    studioLightOpacity: 0.04,
   },
-  neutralId: {
-    brightness: 1.09,
-    contrast: 1.05,
-    saturation: 1.03,
-    red: 1.02,
+  softPink: {
+    brightness: 1.1,
+    contrast: 1.02,
+    saturation: 1.08,
+    red: 1.035,
+    green: 1.015,
+    blue: 1.025,
+    glowOpacity: 0.12,
+    studioLightOpacity: 0.04,
+  },
+  warmStudio: {
+    brightness: 1.08,
+    contrast: 1.04,
+    saturation: 1.07,
+    red: 1.035,
     green: 1.02,
-    blue: 1.03,
+    blue: 1,
+    glowOpacity: 0.1,
+    studioLightOpacity: 0.035,
   },
 };
 
 const clampChannel = (value) => Math.max(0, Math.min(255, value));
 const mix = (from, to, amount) => from + (to - from) * amount;
-
 const getSelectedPreset = () => PHOTOISM_PRESETS[SELECTED_PHOTOISM_PRESET] || PHOTOISM_PRESETS.cleanWhite;
 
-const applyStudioTone = (canvas, strength, preset) => {
+const applyPresetTone = (canvas, strength, preset) => {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const { data } = imageData;
@@ -56,8 +50,7 @@ const applyStudioTone = (canvas, strength, preset) => {
   const red = mix(1, preset.red, strength);
   const green = mix(1, preset.green, strength);
   const blue = mix(1, preset.blue, strength);
-  const highlightLift = 0.035 * strength;
-  const shadowLift = 5.5 * strength;
+  const shadowLift = 3.8 * strength;
 
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i];
@@ -77,47 +70,49 @@ const applyStudioTone = (canvas, strength, preset) => {
     g = luminance + (g - luminance) * saturation;
     b = luminance + (b - luminance) * saturation;
 
-    const normalizedLight = Math.max(0, Math.min(1, luminance / 255));
-    const highlightAmount = normalizedLight * highlightLift;
-    const shadowAmount = (1 - normalizedLight) * shadowLift;
+    const shadowAmount = (1 - Math.max(0, Math.min(1, luminance / 255))) * shadowLift;
 
-    r = r * (red + highlightAmount) + shadowAmount;
-    g = g * (green + highlightAmount) + shadowAmount;
-    b = b * (blue + highlightAmount) + shadowAmount;
-
-    data[i] = clampChannel(r);
-    data[i + 1] = clampChannel(g);
-    data[i + 2] = clampChannel(b);
+    data[i] = clampChannel(r * red + shadowAmount);
+    data[i + 1] = clampChannel(g * green + shadowAmount);
+    data[i + 2] = clampChannel(b * blue + shadowAmount);
   }
 
   ctx.putImageData(imageData, 0, 0);
 };
 
-const applyStudioLight = (canvas, strength, faceBox) => {
+const applySoftGlow = (canvas, strength, preset) => {
   const ctx = canvas.getContext("2d");
-  const centerX = faceBox ? faceBox.originX + faceBox.width / 2 : canvas.width / 2;
-  const centerY = faceBox ? faceBox.originY + faceBox.height * 0.42 : canvas.height * 0.42;
+  const glowCanvas = document.createElement("canvas");
+  glowCanvas.width = canvas.width;
+  glowCanvas.height = canvas.height;
+  const glowCtx = glowCanvas.getContext("2d");
+
+  glowCtx.filter = "blur(4px)";
+  glowCtx.drawImage(canvas, 0, 0);
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(0.14, preset.glowOpacity * strength);
+  ctx.globalCompositeOperation = "screen";
+  ctx.drawImage(glowCanvas, 0, 0);
+  ctx.restore();
+};
+
+const applyStudioLight = (canvas, strength, preset) => {
+  const ctx = canvas.getContext("2d");
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height * 0.42;
   const radius = Math.max(canvas.width, canvas.height) * 0.72;
   const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  const opacity = Math.min(0.05, preset.studioLightOpacity * strength);
 
-  gradient.addColorStop(0, `rgba(255, 255, 255, ${STUDIO_LIGHT_OPACITY * strength})`);
-  gradient.addColorStop(0.52, `rgba(255, 255, 255, ${0.028 * strength})`);
+  gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
+  gradient.addColorStop(0.55, `rgba(255, 255, 255, ${opacity * 0.35})`);
   gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
 
   ctx.save();
   ctx.globalCompositeOperation = "screen";
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.restore();
-
-  const topLight = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.48);
-  topLight.addColorStop(0, `rgba(255, 255, 255, ${0.045 * strength})`);
-  topLight.addColorStop(1, "rgba(255, 255, 255, 0)");
-
-  ctx.save();
-  ctx.globalCompositeOperation = "screen";
-  ctx.fillStyle = topLight;
-  ctx.fillRect(0, 0, canvas.width, canvas.height * 0.52);
   ctx.restore();
 };
 
@@ -126,7 +121,7 @@ const applyMildSharpen = (canvas, strength) => {
   const source = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const output = ctx.createImageData(source);
   const { width, height } = canvas;
-  const sharpenStrength = 0.15 * strength;
+  const sharpenStrength = 0.1 * strength;
 
   output.data.set(source.data);
 
@@ -150,27 +145,7 @@ const applyMildSharpen = (canvas, strength) => {
   ctx.putImageData(output, 0, 0);
 };
 
-const applyFinePaperTexture = (canvas, strength) => {
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const { data } = imageData;
-  const textureStrength = 2.4 * strength;
-
-  for (let y = 0; y < canvas.height; y += 1) {
-    for (let x = 0; x < canvas.width; x += 1) {
-      const index = (y * canvas.width + x) * 4;
-      const grain = (((x * 17 + y * 31) % 13) - 6) * textureStrength * 0.12;
-
-      data[index] = clampChannel(data[index] + grain);
-      data[index + 1] = clampChannel(data[index + 1] + grain);
-      data[index + 2] = clampChannel(data[index + 2] + grain);
-    }
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-};
-
-export const applyLife4CutFilter = async (sourceCanvas) => {
+export const applyLife4CutFilter = (sourceCanvas) => {
   const filteredCanvas = document.createElement("canvas");
   filteredCanvas.width = sourceCanvas.width;
   filteredCanvas.height = sourceCanvas.height;
@@ -183,13 +158,12 @@ export const applyLife4CutFilter = async (sourceCanvas) => {
   }
 
   const strength = Math.max(0, Math.min(1, PHOTOISM_FILTER_STRENGTH));
-  const selectedPreset = getSelectedPreset();
+  const preset = getSelectedPreset();
 
-  applyStudioTone(filteredCanvas, strength, selectedPreset);
-  const faceBox = await applyFaceRetouchIfAvailable(filteredCanvas, strength);
-  applyStudioLight(filteredCanvas, strength, faceBox);
+  applyPresetTone(filteredCanvas, strength, preset);
+  applySoftGlow(filteredCanvas, strength, preset);
+  applyStudioLight(filteredCanvas, strength, preset);
   applyMildSharpen(filteredCanvas, strength);
-  applyFinePaperTexture(filteredCanvas, strength);
 
   return filteredCanvas;
 };
