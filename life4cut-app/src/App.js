@@ -4,12 +4,14 @@ import { applyLife4CutFilter } from "./utils/photoFilter";
 
 const PHOTO_COUNT = 4;
 const CAPTURE_SIZE = 600;
-const CAMERA_ZOOM_FACTOR = 1.18;
+// iPad front cameras can feel too wide; lower to 1.25 if faces are cropped too tightly.
+const CAMERA_ZOOM_FACTOR = 1.35;
 const FRAME_WIDTH = 600;
 const FRAME_HEIGHT = 2400;
 const PHOTO_SIDE = 560;
 const PHOTO_PADDING = (FRAME_WIDTH - PHOTO_SIDE) / 2;
 const PHOTO_Y_POSITIONS = [133, 688, 1231, 1785];
+let hasLoggedCameraDebug = false;
 
 const drawBlackFrame = (ctx) => {
   ctx.save();
@@ -36,6 +38,40 @@ const frames = [
     draw: drawBlackFrame,
   },
 ];
+
+const drawZoomedVideoToCanvas = (video, canvas) => {
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = CAPTURE_SIZE;
+  canvas.height = CAPTURE_SIZE;
+
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
+
+  if (!videoWidth || !videoHeight) {
+    throw new Error("Video metadata is not ready");
+  }
+
+  if (!hasLoggedCameraDebug) {
+    console.log("camera video size", videoWidth, videoHeight);
+    console.log("camera zoom factor", CAMERA_ZOOM_FACTOR);
+    hasLoggedCameraDebug = true;
+  }
+
+  const baseSize = Math.min(videoWidth, videoHeight);
+  const sourceSize = baseSize / CAMERA_ZOOM_FACTOR;
+  const sx = (videoWidth - sourceSize) / 2;
+  const sy = (videoHeight - sourceSize) / 2;
+
+  ctx.clearRect(0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.translate(-CAPTURE_SIZE, 0);
+  ctx.drawImage(video, sx, sy, sourceSize, sourceSize, 0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
+  ctx.restore();
+
+  return canvas;
+};
 
 const readStoredBoolean = (key, fallback) => {
   try {
@@ -174,9 +210,8 @@ export default function App() {
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
 
-    if (!video || !canvas || !ctx) return;
+    if (!video || !canvas) return;
 
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
@@ -192,16 +227,7 @@ export default function App() {
     }
     setShowSquareCamera(true);
 
-    const sourceSize = Math.min(videoWidth, videoHeight) / CAMERA_ZOOM_FACTOR;
-    const sx = (videoWidth - sourceSize) / 2;
-    const sy = (videoHeight - sourceSize) / 2;
-
-    ctx.clearRect(0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.translate(-CAPTURE_SIZE, 0);
-    ctx.drawImage(video, sx, sy, sourceSize, sourceSize, 0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
-    ctx.restore();
+    drawZoomedVideoToCanvas(video, canvas);
 
     const filteredCanvas = filterEnabled ? applyLife4CutFilter(canvas) : canvas;
     const imgData = filteredCanvas.toDataURL("image/png");
