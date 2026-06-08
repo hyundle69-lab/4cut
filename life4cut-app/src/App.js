@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 
 export default function App() {
@@ -13,21 +13,41 @@ export default function App() {
   const [flash, setFlash] = useState(false);
   const [animateCountdown, setAnimateCountdown] = useState(false);
   const [shutterEffect, setShutterEffect] = useState(false);
+  const [cameraError, setCameraError] = useState("");
 
-  useEffect(() => {
-    startCamera();
+  const startCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("이 브라우저에서는 카메라를 지원하지 않습니다.");
+      return;
+    }
+
+    try {
+      setCameraError("");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 1280 },
+        },
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      setCameraError("카메라 권한을 허용한 뒤 다시 시도해주세요.");
+    }
   }, []);
 
-  const startCamera = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { exact: "user" },
-        width: { ideal: 1280 },
-        height: { ideal: 1280 },
-      },
-    });
-    videoRef.current.srcObject = stream;
-  };
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    startCamera();
+
+    return () => {
+      const stream = videoElement?.srcObject;
+      stream?.getTracks?.().forEach((track) => track.stop());
+    };
+  }, [startCamera]);
 
   const takePhoto = () => {
     if (photos.length >= 4 || countdown > 0) return;
@@ -50,6 +70,12 @@ export default function App() {
 
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
+        if (!videoWidth || !videoHeight) {
+          setCameraError("카메라 화면이 준비된 뒤 촬영해주세요.");
+          setShowSquareCamera(false);
+          return;
+        }
+
         const side = Math.min(videoWidth, videoHeight);
         const sx = (videoWidth - side) / 2;
         const sy = (videoHeight - side) / 2;
@@ -93,6 +119,29 @@ export default function App() {
     }
   };
 
+  const drawFrame = (ctx) => {
+    ctx.save();
+    ctx.fillStyle = "#111";
+
+    const sideLength = 560;
+    const sidePadding = (600 - sideLength) / 2;
+    const adjustedYPositions = [133, 688, 1231, 1785];
+
+    ctx.beginPath();
+    ctx.rect(0, 0, 600, 2400);
+    adjustedYPositions.forEach((y) => {
+      ctx.rect(sidePadding, y, sideLength, sideLength);
+    });
+    ctx.fill("evenodd");
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 34px Courier New, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("My 4 Cut", 300, 78);
+    ctx.font = "24px Courier New, monospace";
+    ctx.fillText(new Date().toLocaleDateString(), 300, 2350);
+    ctx.restore();
+  };
+
   const mergePhotos = (images) => {
     const canvas = document.createElement("canvas");
     canvas.width = 600;
@@ -118,13 +167,9 @@ export default function App() {
             ctx.drawImage(img, sidePadding, adjustedYPositions[i], sideLength, sideLength);
           });
 
-          const frame = new Image();
-          frame.src = "/black.png";
-          frame.onload = () => {
-            ctx.drawImage(frame, 0, 0, 600, 2400);
-            const merged = canvas.toDataURL("image/png");
-            setMergedImage(merged);
-          };
+          drawFrame(ctx);
+          const merged = canvas.toDataURL("image/png");
+          setMergedImage(merged);
         }
       };
       img.src = src;
@@ -218,6 +263,7 @@ export default function App() {
           />
           {showSquareCamera && <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "2px dashed #fb8500", boxSizing: "border-box", pointerEvents: "none" }} />}
         </div>
+        {cameraError && <p role="alert" style={{ maxWidth: "320px", color: "#9b2226", fontWeight: 700 }}>{cameraError}</p>}
 
         <canvas ref={canvasRef} width="600" height="600" style={{ display: "none" }} />
 
