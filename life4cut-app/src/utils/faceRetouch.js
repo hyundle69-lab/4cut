@@ -2,6 +2,7 @@ export const FACE_SKIN_SMOOTHING_STRENGTH = 0.22;
 export const FACE_MASK_FEATHER = 18;
 
 const VISION_WASM_BASE_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
+const VISION_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/+esm";
 const FACE_DETECTOR_MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite";
 
@@ -29,12 +30,16 @@ const warnOnce = (type, message, error) => {
   console.warn(message, error);
 };
 
+const loadMediaPipeTasks = () => {
+  return import(/* webpackIgnore: true */ VISION_MODULE_URL);
+};
+
 export const initializeFaceRetouch = () => {
   if (detector || detectorPromise || !canInitializeMediaPipe()) {
     return detectorPromise;
   }
 
-  detectorPromise = import("@mediapipe/tasks-vision")
+  detectorPromise = loadMediaPipeTasks()
     .then(({ FaceDetector, FilesetResolver }) => FilesetResolver.forVisionTasks(VISION_WASM_BASE_URL)
       .then((vision) => FaceDetector.createFromOptions(vision, {
         baseOptions: {
