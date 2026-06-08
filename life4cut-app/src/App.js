@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
+import { applyLife4CutFilter } from "./utils/photoFilter";
 
 export default function App() {
   const videoRef = useRef(null);
@@ -86,7 +87,8 @@ export default function App() {
         ctx.drawImage(video, sx, sy, side, side, 0, 0, 600, 600);
         ctx.restore();
 
-        const imgData = canvas.toDataURL("image/png");
+        const filteredCanvas = applyLife4CutFilter(canvas);
+        const imgData = filteredCanvas.toDataURL("image/png");
         const newPhotos = [...photos, imgData];
         setPhotos(newPhotos);
 
