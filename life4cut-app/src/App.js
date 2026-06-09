@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import "./App.css";
-import { applyLife4CutFilter } from "./utils/photoFilter";
+import {
+  DEFAULT_PHOTOISM_FILTER,
+  PHOTOISM_FILTERS,
+  applyBoothRingLight,
+  applyFinalPrintFinish,
+  applyLife4CutFilter,
+} from "./utils/photoFilter";
 
 const PHOTO_COUNT = 4;
 const CAPTURE_SIZE = 600;
@@ -90,6 +96,23 @@ const writeStoredBoolean = (key, value) => {
   }
 };
 
+const readStoredFilter = () => {
+  try {
+    const storedValue = window.localStorage.getItem("life4cut_filter_preset");
+    return PHOTOISM_FILTERS[storedValue] ? storedValue : DEFAULT_PHOTOISM_FILTER;
+  } catch (error) {
+    return DEFAULT_PHOTOISM_FILTER;
+  }
+};
+
+const writeStoredFilter = (value) => {
+  try {
+    window.localStorage.setItem("life4cut_filter_preset", value);
+  } catch (error) {
+    // localStorage can be unavailable in private browsing modes.
+  }
+};
+
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -102,10 +125,12 @@ export default function App() {
   const [countdown, setCountdown] = useState(0);
   const [countdownKey, setCountdownKey] = useState(0);
   const [flash, setFlash] = useState(false);
+  const [captureComplete, setCaptureComplete] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [timerEnabled, setTimerEnabled] = useState(() => readStoredBoolean("life4cut_timer_enabled", true));
   const [flashEnabled, setFlashEnabled] = useState(() => readStoredBoolean("life4cut_flash_enabled", true));
   const [filterEnabled, setFilterEnabled] = useState(() => readStoredBoolean("life4cut_filter_enabled", true));
+  const [selectedFilter, setSelectedFilter] = useState(readStoredFilter);
 
   const selectedFrame = frames[0];
 
@@ -178,6 +203,10 @@ export default function App() {
     writeStoredBoolean("life4cut_filter_enabled", filterEnabled);
   }, [filterEnabled]);
 
+  useEffect(() => {
+    writeStoredFilter(selectedFilter);
+  }, [selectedFilter]);
+
   const mergePhotos = useCallback((images) => {
     const canvas = document.createElement("canvas");
     canvas.width = FRAME_WIDTH;
@@ -200,7 +229,10 @@ export default function App() {
           });
 
           selectedFrame.draw(ctx);
+          applyFinalPrintFinish(canvas);
           setMergedImage(canvas.toDataURL("image/png"));
+          setCaptureComplete(true);
+          setTimeout(() => setCaptureComplete(false), 780);
         }
       };
       img.src = src;
@@ -228,8 +260,9 @@ export default function App() {
     setShowSquareCamera(true);
 
     drawZoomedVideoToCanvas(video, canvas);
+    applyBoothRingLight(canvas, 1, PHOTOISM_FILTERS[selectedFilter]?.light);
 
-    const filteredCanvas = filterEnabled ? applyLife4CutFilter(canvas) : canvas;
+    const filteredCanvas = filterEnabled ? applyLife4CutFilter(canvas, selectedFilter) : canvas;
     const imgData = filteredCanvas.toDataURL("image/png");
 
     setPhotos((currentPhotos) => {
@@ -241,7 +274,7 @@ export default function App() {
     });
 
     setTimeout(() => setShowSquareCamera(false), 220);
-  }, [filterEnabled, flashEnabled, mergePhotos]);
+  }, [filterEnabled, flashEnabled, mergePhotos, selectedFilter]);
 
   const takePhoto = () => {
     if (photos.length >= PHOTO_COUNT || countdown > 0 || mergedImage) return;
@@ -285,6 +318,7 @@ export default function App() {
     setMergedImage(null);
     setCountdown(0);
     setFlash(false);
+    setCaptureComplete(false);
     setShowSquareCamera(false);
   };
 
@@ -349,7 +383,7 @@ export default function App() {
     }
   };
 
-  const settingSummary = `Timer ${timerEnabled ? "ON" : "OFF"} · Flash ${flashEnabled ? "ON" : "OFF"} · Beauty ${filterEnabled ? "ON" : "OFF"}`;
+  const settingSummary = `Timer ${timerEnabled ? "ON" : "OFF"} · Flash ${flashEnabled ? "ON" : "OFF"} · ${filterEnabled ? PHOTOISM_FILTERS[selectedFilter].label : "NO FILTER"}`;
 
   const renderSettingToggle = (label, enabled, onChange) => (
     <button
@@ -366,6 +400,7 @@ export default function App() {
   return (
     <div className="app app-shell">
       {flash && <div className="flash-overlay" />}
+      {captureComplete && <div className="complete-overlay"><span>DONE</span></div>}
 
       {countdown > 0 && (
         <div className="countdown-overlay">
@@ -393,6 +428,20 @@ export default function App() {
               {renderSettingToggle("Flash", flashEnabled, setFlashEnabled)}
               {renderSettingToggle("Beauty Filter", filterEnabled, setFilterEnabled)}
             </div>
+
+            <div className="filter-selector" aria-label="필터 선택">
+              {Object.entries(PHOTOISM_FILTERS).map(([filterId, filter]) => (
+                <button
+                  type="button"
+                  key={filterId}
+                  className={`filter-chip ${selectedFilter === filterId ? "active" : ""}`}
+                  onClick={() => setSelectedFilter(filterId)}
+                  aria-pressed={selectedFilter === filterId}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
       ) : mergedImage ? (
@@ -402,9 +451,9 @@ export default function App() {
             <img className="result-image" src={mergedImage} alt="네컷" />
           </div>
           <div className="result-actions">
-            <button className="button gray" onClick={resetPhotos}>RETAKE</button>
             <button className="button accent" onClick={() => downloadImage(mergedImage)}>SAVE</button>
             <button className="button primary" onClick={shareImage}>SHARE</button>
+            <button className="button gray" onClick={resetPhotos}>RETAKE</button>
             <button className="button soft" onClick={goHome}>HOME</button>
           </div>
         </section>
@@ -426,6 +475,7 @@ export default function App() {
                 className="camera-video"
                 style={{ "--camera-zoom": CAMERA_ZOOM_FACTOR }}
               />
+              <div className="ring-light-overlay" />
               <div className="face-guide" />
               {showSquareCamera && <div className="capture-outline" />}
             </div>

@@ -141,6 +141,38 @@ button {
   margin-top: 24px;
 }
 
+.filter-selector {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.filter-chip {
+  min-height: 42px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 999px;
+  background: #fff;
+  color: #777;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: border 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.filter-chip.active {
+  border-color: rgba(17, 17, 17, 0.82);
+  background: #111;
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(17, 17, 17, 0.12);
+}
+
+.filter-chip:hover {
+  transform: translateY(-1px);
+}
+
 .booth-toggle {
   position: relative;
   display: flex;
@@ -295,6 +327,17 @@ button {
   transform-origin: center center;
 }
 
+.ring-light-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.11) 34%, rgba(255, 248, 236, 0.035) 62%, rgba(255, 255, 255, 0) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  pointer-events: none;
+}
+
 .face-guide {
   position: absolute;
   inset: 13%;
@@ -332,7 +375,7 @@ button {
   border: 3px solid rgba(181, 155, 106, 0.88);
   box-sizing: border-box;
   pointer-events: none;
-  transition: opacity 180ms ease;
+  animation: captureSeal 240ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .camera-error {
@@ -392,6 +435,10 @@ button {
   flex-wrap: wrap;
 }
 
+.result-actions {
+  gap: 12px;
+}
+
 .button {
   min-height: 52px;
   padding: 13px 22px;
@@ -403,6 +450,23 @@ button {
   cursor: pointer;
   transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease, background 200ms ease;
   touch-action: manipulation;
+}
+
+.result-actions .button {
+  min-width: 116px;
+  border-radius: 0;
+  border-color: rgba(17, 17, 17, 0.16);
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+}
+
+.result-actions .button.accent,
+.result-actions .button.primary {
+  background: #111;
+  color: #fff;
 }
 
 .button:hover:not(:disabled) {
@@ -477,9 +541,10 @@ button {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #fff;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.82) 48%, rgba(255, 255, 255, 0));
   pointer-events: none;
-  animation: flashFade 190ms ease-out forwards;
+  animation: flashFade 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .countdown-overlay {
@@ -489,7 +554,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(17, 17, 17, 0.42);
+  background: rgba(17, 17, 17, 0.24);
+  backdrop-filter: blur(1.5px);
   pointer-events: none;
 }
 
@@ -498,35 +564,59 @@ button {
   font-size: clamp(100px, 28vw, 160px);
   font-weight: 300;
   line-height: 1;
-  text-shadow: 0 8px 22px rgba(17, 17, 17, 0.24);
-  animation: countdownPop 850ms ease-out forwards;
+  text-shadow: 0 10px 30px rgba(17, 17, 17, 0.26);
+  animation: countdownPop 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.complete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(250, 250, 248, 0.72);
+  pointer-events: none;
+  animation: completeFade 760ms ease forwards;
+}
+
+.complete-overlay span {
+  border: 1px solid rgba(17, 17, 17, 0.26);
+  padding: 18px 30px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #111;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  animation: completeStamp 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .result-stage {
   flex-direction: column;
-  gap: 18px;
+  gap: 26px;
+  padding: 38px 0;
+  animation: resultArrive 520ms ease both;
 }
 
 .result-stage h2 {
   margin: 0;
   color: #111;
-  font-size: clamp(28px, 6vw, 42px);
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: 0;
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: 0.02em;
 }
 
 .result-preview-card {
-  width: min(84vw, 360px);
+  width: min(78vw, 340px);
   max-height: calc(100dvh - 220px);
   box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 24px;
-  padding: 16px;
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: 4px;
+  padding: 18px;
   background: #fff;
-  box-shadow: 0 28px 72px rgba(17, 17, 17, 0.16);
-  transform: translateY(-2px);
+  box-shadow: 0 32px 86px rgba(17, 17, 17, 0.14);
 }
 
 .result-image {
@@ -534,7 +624,7 @@ button {
   width: 100%;
   max-height: calc(100dvh - 252px);
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 2px;
 }
 
 @keyframes pageFade {
@@ -551,24 +641,82 @@ button {
 @keyframes countdownPop {
   0% {
     opacity: 0;
-    transform: scale(0.62);
+    transform: scale(0.74) translateY(12px);
   }
   35% {
     opacity: 1;
-    transform: scale(1.08);
+    transform: scale(1.03) translateY(0);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
   100% {
     opacity: 0;
-    transform: scale(1.18);
+    transform: scale(1.12) translateY(-12px);
   }
 }
 
 @keyframes flashFade {
   0% {
+    opacity: 0;
+  }
+  18% {
     opacity: 1;
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes captureSeal {
+  0% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes completeFade {
+  0%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes completeStamp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  36% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+@keyframes resultArrive {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -593,6 +741,10 @@ button {
 
   .booth-setting-row {
     grid-template-columns: 1fr;
+  }
+
+  .filter-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .booth-toggle {
