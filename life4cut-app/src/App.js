@@ -18,7 +18,7 @@ const PHOTO_SIDE = 560;
 const PHOTO_PADDING = (FRAME_WIDTH - PHOTO_SIDE) / 2;
 const PHOTO_STRIP_Y = 120;
 const PHOTO_STRIP_HEIGHT = 2240;
-const PHOTO_GAP = 16;
+const PHOTO_GAP = 4;
 const PHOTO_SLOT_HEIGHT = (PHOTO_STRIP_HEIGHT - PHOTO_GAP * (PHOTO_COUNT - 1)) / PHOTO_COUNT;
 const PHOTO_SLOTS = Array.from({ length: PHOTO_COUNT }, (_, index) => ({
   x: PHOTO_PADDING,
