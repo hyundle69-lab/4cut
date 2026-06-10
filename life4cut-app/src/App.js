@@ -80,6 +80,10 @@ const drawBlackFrame = (ctx) => {
     ctx.rect(slot.x, slot.y, slot.width, slot.height);
   });
   ctx.fill("evenodd");
+  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+  ctx.textAlign = "center";
+  ctx.font = "400 20px Inter, Arial, sans-serif";
+  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2386, 8);
   ctx.restore();
 };
 
@@ -93,8 +97,6 @@ const drawBusinessFrame = (ctx) => {
   });
   ctx.fill("evenodd");
 
-  drawPhotoSlotLines(ctx, "rgba(255, 255, 255, 0.72)", 1);
-
   ctx.fillStyle = "#f7f7f3";
   ctx.textAlign = "center";
   ctx.font = "600 34px Inter, Arial, sans-serif";
@@ -104,7 +106,7 @@ const drawBusinessFrame = (ctx) => {
 
 const drawSchoolFrame = (ctx) => {
   ctx.save();
-  ctx.fillStyle = "#fbfbf8";
+  ctx.fillStyle = "#faf9f6";
   ctx.beginPath();
   ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
   PHOTO_SLOTS.forEach((slot) => {
@@ -112,12 +114,38 @@ const drawSchoolFrame = (ctx) => {
   });
   ctx.fill("evenodd");
 
-  drawPhotoSlotLines(ctx, "rgba(17, 17, 17, 0.18)", 1);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.rect(slot.x, slot.y, slot.width, slot.height);
+  });
+  ctx.clip("evenodd");
+  ctx.globalAlpha = 0.1;
+  for (let y = 0; y < FRAME_HEIGHT; y += 18) {
+    ctx.fillStyle = y % 36 === 0 ? "#ffffff" : "#e9e2d6";
+    ctx.fillRect(0, y, FRAME_WIDTH, 1);
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.shadowColor = "rgba(43, 37, 29, 0.1)";
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 3;
+  drawPhotoSlotLines(ctx, "rgba(34, 31, 27, 0.16)", 0.85);
+  ctx.restore();
+
+  ctx.strokeStyle = "rgba(34, 31, 27, 0.14)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(104, 96);
+  ctx.lineTo(496, 96);
+  ctx.stroke();
 
   ctx.textAlign = "center";
-  ctx.fillStyle = "#1c232b";
-  ctx.font = "400 27px Inter, Arial, sans-serif";
-  ctx.fillText("TOYO University Koreans", FRAME_WIDTH / 2, 76);
+  ctx.fillStyle = "#25211b";
+  ctx.font = "500 24px Georgia, Times New Roman, serif";
+  drawTrackingText(ctx, "Toyo University Koreans", FRAME_WIDTH / 2, 74, 1.6);
   ctx.restore();
 };
 
@@ -142,11 +170,11 @@ const FRAME_PRESETS = {
   },
   school: {
     label: "School",
-    titleText: "TOYO University Koreans",
-    subtitleText: "STUDENT PHOTO BOOTH",
+    titleText: "Toyo University Koreans",
+    subtitleText: "",
     styleClass: "frame-school",
     borderColor: "#d9dde3",
-    backgroundColor: "#fbfbf8",
+    backgroundColor: "#faf9f6",
     draw: drawSchoolFrame,
   },
 };

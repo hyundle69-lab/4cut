@@ -179,6 +179,8 @@ button {
 
 .frame-chip.active {
   border-color: rgba(17, 17, 17, 0.82);
+  background: #111;
+  color: #fff;
   box-shadow: 0 10px 24px rgba(17, 17, 17, 0.12);
 }
 
@@ -186,29 +188,26 @@ button {
   transform: translateY(-1px);
 }
 
-.frame-chip.frame-private.active {
+.frame-chip.frame-business {
+  background: #fff;
+  color: #555;
+}
+
+.frame-chip.frame-business.active {
+  border-color: rgba(17, 17, 17, 0.82);
   background: #111;
   color: #fff;
 }
 
-.frame-chip.frame-business {
-  background: #171717;
-  color: #f4f4f0;
-}
-
-.frame-chip.frame-business.active {
-  border-color: rgba(255, 255, 255, 0.74);
-  background: #050505;
-}
-
 .frame-chip.frame-school {
-  background: #fbfbf8;
-  color: #28303a;
+  background: #fff;
+  color: #555;
 }
 
 .frame-chip.frame-school.active {
-  border-color: rgba(40, 48, 58, 0.42);
-  background: #fff;
+  border-color: rgba(17, 17, 17, 0.82);
+  background: #111;
+  color: #fff;
 }
 
 .filter-chip {
