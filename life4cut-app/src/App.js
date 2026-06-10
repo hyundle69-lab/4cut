@@ -80,10 +80,13 @@ const drawBlackFrame = (ctx) => {
     ctx.rect(slot.x, slot.y, slot.width, slot.height);
   });
   ctx.fill("evenodd");
-  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
   ctx.textAlign = "center";
+  ctx.font = "400 14px Inter, Arial, sans-serif";
+  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 72, 5);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
   ctx.font = "400 20px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2386, 8);
+  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2332, 8);
   ctx.restore();
 };
 
