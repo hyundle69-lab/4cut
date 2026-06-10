@@ -58,6 +58,14 @@ const drawTrackingText = (ctx, text, x, y, tracking) => {
   });
 };
 
+const getFrameDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
+};
+
 const drawImageCover = (ctx, image, x, y, width, height) => {
   const imageRatio = image.width / image.height;
   const slotRatio = width / height;
@@ -89,7 +97,7 @@ const drawBlackFrame = (ctx) => {
   ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
   ctx.textAlign = "center";
   ctx.font = "400 14px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 72, 5);
+  drawTrackingText(ctx, getFrameDate(), FRAME_WIDTH / 2, 72, 5);
   ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
   ctx.font = "400 20px Inter, Arial, sans-serif";
   drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, FRAME_HEIGHT - 24, 8);
