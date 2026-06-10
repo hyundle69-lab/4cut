@@ -90,10 +90,10 @@ const drawBlackFrame = (ctx) => {
 const drawBusinessFrame = (ctx) => {
   ctx.save();
   const metallicGradient = ctx.createLinearGradient(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-  metallicGradient.addColorStop(0, "#001b2e");
-  metallicGradient.addColorStop(0.35, "#003f6b");
-  metallicGradient.addColorStop(0.55, "#0a6ea8");
-  metallicGradient.addColorStop(1, "#002e4f");
+  metallicGradient.addColorStop(0, "#001f33");
+  metallicGradient.addColorStop(0.32, "#002e4f");
+  metallicGradient.addColorStop(0.68, "#00324f");
+  metallicGradient.addColorStop(1, "#001f33");
 
   ctx.fillStyle = metallicGradient;
   ctx.beginPath();
@@ -113,16 +113,16 @@ const drawBusinessFrame = (ctx) => {
 
   const sideHighlight = ctx.createLinearGradient(0, 0, FRAME_WIDTH, 0);
   sideHighlight.addColorStop(0, "rgba(255, 255, 255, 0)");
-  sideHighlight.addColorStop(0.18, "rgba(255, 255, 255, 0.13)");
-  sideHighlight.addColorStop(0.36, "rgba(255, 255, 255, 0.02)");
+  sideHighlight.addColorStop(0.18, "rgba(255, 255, 255, 0.055)");
+  sideHighlight.addColorStop(0.36, "rgba(255, 255, 255, 0.01)");
   sideHighlight.addColorStop(1, "rgba(255, 255, 255, 0)");
   ctx.fillStyle = sideHighlight;
   ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
   const glossyReflection = ctx.createLinearGradient(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
   glossyReflection.addColorStop(0, "rgba(255, 255, 255, 0)");
-  glossyReflection.addColorStop(0.42, "rgba(255, 255, 255, 0.1)");
-  glossyReflection.addColorStop(0.57, "rgba(255, 255, 255, 0.02)");
+  glossyReflection.addColorStop(0.42, "rgba(255, 255, 255, 0.045)");
+  glossyReflection.addColorStop(0.57, "rgba(255, 255, 255, 0.01)");
   glossyReflection.addColorStop(1, "rgba(255, 255, 255, 0)");
   ctx.fillStyle = glossyReflection;
   ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
@@ -205,7 +205,7 @@ const FRAME_PRESETS = {
     subtitleText: "",
     styleClass: "frame-business",
     borderColor: "#ffffff",
-    backgroundColor: "#003f6b",
+    backgroundColor: "#002e4f",
     draw: drawBusinessFrame,
   },
   school: {
