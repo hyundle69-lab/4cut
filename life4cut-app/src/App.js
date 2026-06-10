@@ -135,17 +135,19 @@ const drawSchoolFrame = (ctx) => {
   drawPhotoSlotLines(ctx, "rgba(34, 31, 27, 0.16)", 0.85);
   ctx.restore();
 
-  ctx.strokeStyle = "rgba(34, 31, 27, 0.14)";
+  ctx.strokeStyle = "rgba(180, 160, 120, 0.35)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(104, 96);
-  ctx.lineTo(496, 96);
+  ctx.moveTo(FRAME_WIDTH * 0.275, 98);
+  ctx.lineTo(FRAME_WIDTH * 0.725, 98);
   ctx.stroke();
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#25211b";
-  ctx.font = "500 24px Georgia, Times New Roman, serif";
-  drawTrackingText(ctx, "Toyo University Koreans", FRAME_WIDTH / 2, 74, 1.6);
+  ctx.font = "500 22px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Toyo University", FRAME_WIDTH / 2, 56, 1.2);
+  ctx.font = "400 16px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Koreans", FRAME_WIDTH / 2, 78, 2);
   ctx.restore();
 };
 
