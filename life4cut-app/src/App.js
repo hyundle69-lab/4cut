@@ -20,20 +20,23 @@ const PHOTO_AREA_Y = 128;
 const PHOTO_AREA_HEIGHT = FRAME_HEIGHT - PHOTO_AREA_Y * 2;
 const PHOTO_GAP = Math.round(FRAME_HEIGHT * 0.01);
 const PHOTO_SLOT_HEIGHT = (PHOTO_AREA_HEIGHT - PHOTO_GAP * (PHOTO_COUNT - 1)) / PHOTO_COUNT;
-const PHOTO_SLOTS = Array.from({ length: PHOTO_COUNT }, (_, index) => ({
+const PRIVATE_FOOTER_REDUCTION = 64;
+const createPhotoSlots = (offsetY = 0) => Array.from({ length: PHOTO_COUNT }, (_, index) => ({
   x: PHOTO_SIDE_BORDER,
-  y: PHOTO_AREA_Y + (PHOTO_SLOT_HEIGHT + PHOTO_GAP) * index,
+  y: PHOTO_AREA_Y + offsetY + (PHOTO_SLOT_HEIGHT + PHOTO_GAP) * index,
   width: PHOTO_WIDTH,
   height: PHOTO_SLOT_HEIGHT,
 }));
+const PHOTO_SLOTS = createPhotoSlots();
+const PRIVATE_PHOTO_SLOTS = createPhotoSlots(PRIVATE_FOOTER_REDUCTION);
 let hasLoggedCameraDebug = false;
 
-const drawPhotoSlotLines = (ctx, color, alpha = 1) => {
+const drawPhotoSlotLines = (ctx, color, alpha = 1, slots = PHOTO_SLOTS) => {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.globalAlpha = alpha;
   ctx.lineWidth = 2;
-  PHOTO_SLOTS.forEach((slot) => {
+  slots.forEach((slot) => {
     ctx.strokeRect(slot.x + 1, slot.y + 1, slot.width - 2, slot.height - 2);
   });
   ctx.restore();
@@ -76,7 +79,7 @@ const drawBlackFrame = (ctx) => {
   ctx.fillStyle = "#111";
   ctx.beginPath();
   ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-  PHOTO_SLOTS.forEach((slot) => {
+  PRIVATE_PHOTO_SLOTS.forEach((slot) => {
     ctx.rect(slot.x, slot.y, slot.width, slot.height);
   });
   ctx.fill("evenodd");
@@ -86,7 +89,7 @@ const drawBlackFrame = (ctx) => {
   drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 72, 5);
   ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
   ctx.font = "400 20px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2332, 8);
+  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2376, 8);
   ctx.restore();
 };
 
@@ -200,6 +203,7 @@ const FRAME_PRESETS = {
     styleClass: "frame-private",
     borderColor: "#111",
     backgroundColor: "#111",
+    photoSlots: PRIVATE_PHOTO_SLOTS,
     draw: drawBlackFrame,
   },
   business: {
@@ -405,7 +409,7 @@ export default function App() {
         if (loadedCount === PHOTO_COUNT) {
           loadedImages.forEach((loadedImage, i) => {
             if (!loadedImage) return;
-            const slot = PHOTO_SLOTS[i];
+            const slot = (selectedFrame.photoSlots || PHOTO_SLOTS)[i];
             drawImageCover(ctx, loadedImage, slot.x, slot.y, slot.width, slot.height);
           });
 
