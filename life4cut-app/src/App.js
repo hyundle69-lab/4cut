@@ -13,22 +13,25 @@ const CAPTURE_SIZE = 600;
 // iPad front cameras can feel too wide; lower to 1.25 if faces are cropped too tightly.
 const CAMERA_ZOOM_FACTOR = 1.35;
 const FRAME_WIDTH = 600;
-const FRAME_HEIGHT = 2400;
-const PHOTO_SIDE_BORDER = Math.round(FRAME_WIDTH * 0.07);
-const PHOTO_WIDTH = FRAME_WIDTH - PHOTO_SIDE_BORDER * 2;
-const PHOTO_AREA_Y = 128;
-const PHOTO_AREA_HEIGHT = FRAME_HEIGHT - PHOTO_AREA_Y * 2;
-const PHOTO_GAP = Math.round(FRAME_HEIGHT * 0.01);
+const FRAME_LAYOUT = {
+  headerHeight: 64,
+  footerHeight: 64,
+  photoAreaHeight: 2144,
+  photoGap: 24,
+  sideBorder: Math.round(FRAME_WIDTH * 0.07),
+};
+const FRAME_HEIGHT = FRAME_LAYOUT.headerHeight + FRAME_LAYOUT.photoAreaHeight + FRAME_LAYOUT.footerHeight;
+const PHOTO_WIDTH = FRAME_WIDTH - FRAME_LAYOUT.sideBorder * 2;
+const PHOTO_AREA_Y = FRAME_LAYOUT.headerHeight;
+const PHOTO_AREA_HEIGHT = FRAME_LAYOUT.photoAreaHeight;
+const PHOTO_GAP = FRAME_LAYOUT.photoGap;
 const PHOTO_SLOT_HEIGHT = (PHOTO_AREA_HEIGHT - PHOTO_GAP * (PHOTO_COUNT - 1)) / PHOTO_COUNT;
-const PRIVATE_FOOTER_REDUCTION = 64;
-const createPhotoSlots = (offsetY = 0) => Array.from({ length: PHOTO_COUNT }, (_, index) => ({
-  x: PHOTO_SIDE_BORDER,
-  y: PHOTO_AREA_Y + offsetY + (PHOTO_SLOT_HEIGHT + PHOTO_GAP) * index,
+const PHOTO_SLOTS = Array.from({ length: PHOTO_COUNT }, (_, index) => ({
+  x: FRAME_LAYOUT.sideBorder,
+  y: PHOTO_AREA_Y + (PHOTO_SLOT_HEIGHT + PHOTO_GAP) * index,
   width: PHOTO_WIDTH,
   height: PHOTO_SLOT_HEIGHT,
 }));
-const PHOTO_SLOTS = createPhotoSlots();
-const PRIVATE_PHOTO_SLOTS = createPhotoSlots(PRIVATE_FOOTER_REDUCTION);
 let hasLoggedCameraDebug = false;
 
 const drawPhotoSlotLines = (ctx, color, alpha = 1, slots = PHOTO_SLOTS) => {
@@ -79,17 +82,17 @@ const drawBlackFrame = (ctx) => {
   ctx.fillStyle = "#111";
   ctx.beginPath();
   ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-  PRIVATE_PHOTO_SLOTS.forEach((slot) => {
+  PHOTO_SLOTS.forEach((slot) => {
     ctx.rect(slot.x, slot.y, slot.width, slot.height);
   });
   ctx.fill("evenodd");
   ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
   ctx.textAlign = "center";
   ctx.font = "400 14px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 72, 5);
+  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 38, 5);
   ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
   ctx.font = "400 20px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, 2376, 8);
+  drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, FRAME_HEIGHT - 24, 8);
   ctx.restore();
 };
 
@@ -136,14 +139,14 @@ const drawBusinessFrame = (ctx) => {
 
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
-  ctx.font = "400 42px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 74, 1.5);
+  ctx.font = "400 34px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 42, 1.5);
 
   ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(FRAME_WIDTH / 2 - 18, 92);
-  ctx.lineTo(FRAME_WIDTH / 2 + 18, 92);
+  ctx.moveTo(FRAME_WIDTH / 2 - 18, 56);
+  ctx.lineTo(FRAME_WIDTH / 2 + 18, 56);
   ctx.stroke();
   ctx.restore();
 };
@@ -182,16 +185,16 @@ const drawSchoolFrame = (ctx) => {
   ctx.strokeStyle = "rgba(180, 160, 120, 0.35)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(FRAME_WIDTH * 0.275, 98);
-  ctx.lineTo(FRAME_WIDTH * 0.725, 98);
+  ctx.moveTo(FRAME_WIDTH * 0.275, 56);
+  ctx.lineTo(FRAME_WIDTH * 0.725, 56);
   ctx.stroke();
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#25211b";
-  ctx.font = "500 22px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "Toyo University", FRAME_WIDTH / 2, 56, 1.2);
-  ctx.font = "400 16px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "Koreans", FRAME_WIDTH / 2, 78, 2);
+  ctx.font = "500 20px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Toyo University", FRAME_WIDTH / 2, 26, 1.2);
+  ctx.font = "400 14px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Koreans", FRAME_WIDTH / 2, 44, 2);
   ctx.restore();
 };
 
@@ -203,7 +206,6 @@ const FRAME_PRESETS = {
     styleClass: "frame-private",
     borderColor: "#111",
     backgroundColor: "#111",
-    photoSlots: PRIVATE_PHOTO_SLOTS,
     draw: drawBlackFrame,
   },
   business: {
@@ -409,7 +411,7 @@ export default function App() {
         if (loadedCount === PHOTO_COUNT) {
           loadedImages.forEach((loadedImage, i) => {
             if (!loadedImage) return;
-            const slot = (selectedFrame.photoSlots || PHOTO_SLOTS)[i];
+            const slot = PHOTO_SLOTS[i];
             drawImageCover(ctx, loadedImage, slot.x, slot.y, slot.width, slot.height);
           });
 
