@@ -149,6 +149,68 @@ button {
   margin-top: 14px;
 }
 
+.frame-selector {
+  display: grid;
+  width: min(100%, 520px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.camera-stage > .frame-selector,
+.result-stage > .frame-selector {
+  margin-top: 0;
+}
+
+.frame-chip {
+  position: relative;
+  min-height: 44px;
+  overflow: hidden;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: border 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.frame-chip.active {
+  border-color: rgba(17, 17, 17, 0.82);
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.12);
+}
+
+.frame-chip:hover {
+  transform: translateY(-1px);
+}
+
+.frame-chip.frame-private.active {
+  background: #111;
+  color: #fff;
+}
+
+.frame-chip.frame-business {
+  background: #171717;
+  color: #f4f4f0;
+}
+
+.frame-chip.frame-business.active {
+  border-color: rgba(255, 255, 255, 0.74);
+  background: #050505;
+}
+
+.frame-chip.frame-school {
+  background: #fbfbf8;
+  color: #28303a;
+}
+
+.frame-chip.frame-school.active {
+  border-color: rgba(40, 48, 58, 0.42);
+  background: #fff;
+}
+
 .filter-chip {
   min-height: 42px;
   border: 1px solid rgba(17, 17, 17, 0.08);

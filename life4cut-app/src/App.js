@@ -16,34 +16,140 @@ const FRAME_WIDTH = 600;
 const FRAME_HEIGHT = 2400;
 const PHOTO_SIDE = 560;
 const PHOTO_PADDING = (FRAME_WIDTH - PHOTO_SIDE) / 2;
-const PHOTO_Y_POSITIONS = [133, 688, 1231, 1785];
+const PHOTO_STRIP_Y = 120;
+const PHOTO_STRIP_HEIGHT = 2240;
+const PHOTO_GAP = 16;
+const PHOTO_SLOT_HEIGHT = (PHOTO_STRIP_HEIGHT - PHOTO_GAP * (PHOTO_COUNT - 1)) / PHOTO_COUNT;
+const PHOTO_SLOTS = Array.from({ length: PHOTO_COUNT }, (_, index) => ({
+  x: PHOTO_PADDING,
+  y: PHOTO_STRIP_Y + (PHOTO_SLOT_HEIGHT + PHOTO_GAP) * index,
+  width: PHOTO_SIDE,
+  height: PHOTO_SLOT_HEIGHT,
+}));
 let hasLoggedCameraDebug = false;
+
+const drawPhotoSlotLines = (ctx, color, alpha = 1) => {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = 2;
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.strokeRect(slot.x + 1, slot.y + 1, slot.width - 2, slot.height - 2);
+  });
+  ctx.restore();
+};
+
+const drawTrackingText = (ctx, text, x, y, tracking) => {
+  const characters = Array.from(text);
+  const textWidth = characters.reduce((width, character, index) => (
+    width + ctx.measureText(character).width + (index < characters.length - 1 ? tracking : 0)
+  ), 0);
+  let currentX = x - textWidth / 2;
+
+  characters.forEach((character, index) => {
+    ctx.fillText(character, currentX, y);
+    currentX += ctx.measureText(character).width + (index < characters.length - 1 ? tracking : 0);
+  });
+};
+
+const drawImageCover = (ctx, image, x, y, width, height) => {
+  const imageRatio = image.width / image.height;
+  const slotRatio = width / height;
+  let sx = 0;
+  let sy = 0;
+  let sourceWidth = image.width;
+  let sourceHeight = image.height;
+
+  if (imageRatio > slotRatio) {
+    sourceWidth = image.height * slotRatio;
+    sx = (image.width - sourceWidth) / 2;
+  } else {
+    sourceHeight = image.width / slotRatio;
+    sy = (image.height - sourceHeight) / 2;
+  }
+
+  ctx.drawImage(image, sx, sy, sourceWidth, sourceHeight, x, y, width, height);
+};
 
 const drawBlackFrame = (ctx) => {
   ctx.save();
   ctx.fillStyle = "#111";
   ctx.beginPath();
   ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-  PHOTO_Y_POSITIONS.forEach((y) => {
-    ctx.rect(PHOTO_PADDING, y, PHOTO_SIDE, PHOTO_SIDE);
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.rect(slot.x, slot.y, slot.width, slot.height);
   });
   ctx.fill("evenodd");
-  ctx.fillStyle = "#fff";
-  ctx.font = "700 34px Courier New, monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("My 4 Cut", FRAME_WIDTH / 2, 78);
-  ctx.font = "24px Courier New, monospace";
-  ctx.fillText(new Date().toLocaleDateString(), FRAME_WIDTH / 2, 2350);
   ctx.restore();
 };
 
-const frames = [
-  {
-    id: "black",
-    name: "Black",
+const drawBusinessFrame = (ctx) => {
+  ctx.save();
+  ctx.fillStyle = "#111";
+  ctx.beginPath();
+  ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.rect(slot.x, slot.y, slot.width, slot.height);
+  });
+  ctx.fill("evenodd");
+
+  drawPhotoSlotLines(ctx, "rgba(255, 255, 255, 0.72)", 1);
+
+  ctx.fillStyle = "#f7f7f3";
+  ctx.textAlign = "center";
+  ctx.font = "600 34px Inter, Arial, sans-serif";
+  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 78, 4);
+  ctx.restore();
+};
+
+const drawSchoolFrame = (ctx) => {
+  ctx.save();
+  ctx.fillStyle = "#fbfbf8";
+  ctx.beginPath();
+  ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.rect(slot.x, slot.y, slot.width, slot.height);
+  });
+  ctx.fill("evenodd");
+
+  drawPhotoSlotLines(ctx, "rgba(17, 17, 17, 0.18)", 1);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#1c232b";
+  ctx.font = "400 27px Inter, Arial, sans-serif";
+  ctx.fillText("TOYO University Koreans", FRAME_WIDTH / 2, 76);
+  ctx.restore();
+};
+
+const FRAME_PRESETS = {
+  private: {
+    label: "Private",
+    titleText: "",
+    subtitleText: "",
+    styleClass: "frame-private",
+    borderColor: "#111",
+    backgroundColor: "#111",
     draw: drawBlackFrame,
   },
-];
+  business: {
+    label: "Business",
+    titleText: "ASCE+",
+    subtitleText: "",
+    styleClass: "frame-business",
+    borderColor: "#f7f7f3",
+    backgroundColor: "#111",
+    draw: drawBusinessFrame,
+  },
+  school: {
+    label: "School",
+    titleText: "TOYO University Koreans",
+    subtitleText: "STUDENT PHOTO BOOTH",
+    styleClass: "frame-school",
+    borderColor: "#d9dde3",
+    backgroundColor: "#fbfbf8",
+    draw: drawSchoolFrame,
+  },
+};
 
 const drawZoomedVideoToCanvas = (video, canvas) => {
   const ctx = canvas.getContext("2d");
@@ -118,6 +224,7 @@ export default function App() {
   const canvasRef = useRef(null);
   const countdownTimerRef = useRef(null);
   const streamRef = useRef(null);
+  const mergedFrameTypeRef = useRef("private");
   const [view, setView] = useState("home");
   const [photos, setPhotos] = useState([]);
   const [mergedImage, setMergedImage] = useState(null);
@@ -131,8 +238,9 @@ export default function App() {
   const [flashEnabled, setFlashEnabled] = useState(() => readStoredBoolean("life4cut_flash_enabled", true));
   const [filterEnabled, setFilterEnabled] = useState(() => readStoredBoolean("life4cut_filter_enabled", true));
   const [selectedFilter, setSelectedFilter] = useState(readStoredFilter);
+  const [frameType, setFrameType] = useState("private");
 
-  const selectedFrame = frames[0];
+  const selectedFrame = FRAME_PRESETS[frameType] || FRAME_PRESETS.private;
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks?.().forEach((track) => track.stop());
@@ -207,7 +315,8 @@ export default function App() {
     writeStoredFilter(selectedFilter);
   }, [selectedFilter]);
 
-  const mergePhotos = useCallback((images) => {
+  const mergePhotos = useCallback((images, options = {}) => {
+    const { showCompleteEffect = true } = options;
     const canvas = document.createElement("canvas");
     canvas.width = FRAME_WIDTH;
     canvas.height = FRAME_HEIGHT;
@@ -225,19 +334,28 @@ export default function App() {
         if (loadedCount === PHOTO_COUNT) {
           loadedImages.forEach((loadedImage, i) => {
             if (!loadedImage) return;
-            ctx.drawImage(loadedImage, PHOTO_PADDING, PHOTO_Y_POSITIONS[i], PHOTO_SIDE, PHOTO_SIDE);
+            const slot = PHOTO_SLOTS[i];
+            drawImageCover(ctx, loadedImage, slot.x, slot.y, slot.width, slot.height);
           });
 
           selectedFrame.draw(ctx);
           applyFinalPrintFinish(canvas);
+          mergedFrameTypeRef.current = frameType;
           setMergedImage(canvas.toDataURL("image/png"));
-          setCaptureComplete(true);
-          setTimeout(() => setCaptureComplete(false), 780);
+          if (showCompleteEffect) {
+            setCaptureComplete(true);
+            setTimeout(() => setCaptureComplete(false), 780);
+          }
         }
       };
       img.src = src;
     });
-  }, [selectedFrame]);
+  }, [frameType, selectedFrame]);
+
+  useEffect(() => {
+    if (!mergedImage || photos.length !== PHOTO_COUNT || mergedFrameTypeRef.current === frameType) return;
+    mergePhotos(photos, { showCompleteEffect: false });
+  }, [frameType, mergePhotos, mergedImage, photos]);
 
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
@@ -397,6 +515,22 @@ export default function App() {
     </button>
   );
 
+  const renderFrameSelector = () => (
+    <div className="frame-selector" aria-label="프레임 선택">
+      {Object.entries(FRAME_PRESETS).map(([presetId, preset]) => (
+        <button
+          type="button"
+          key={presetId}
+          className={`frame-chip ${preset.styleClass} ${frameType === presetId ? "active" : ""}`}
+          onClick={() => setFrameType(presetId)}
+          aria-pressed={frameType === presetId}
+        >
+          {preset.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="app app-shell">
       {flash && <div className="flash-overlay" />}
@@ -423,6 +557,8 @@ export default function App() {
 
             <button className="booth-main-button" onClick={startSession}>START PHOTO SESSION</button>
 
+            {renderFrameSelector()}
+
             <div className="booth-setting-row" aria-label="촬영 설정">
               {renderSettingToggle("Timer", timerEnabled, setTimerEnabled)}
               {renderSettingToggle("Flash", flashEnabled, setFlashEnabled)}
@@ -447,6 +583,7 @@ export default function App() {
       ) : mergedImage ? (
         <section className="result-stage result-view">
           <h2>Your Moment is Ready</h2>
+          {renderFrameSelector()}
           <div className="result-preview-card">
             <img className="result-image" src={mergedImage} alt="네컷" />
           </div>
@@ -463,6 +600,7 @@ export default function App() {
             <div className="capture-progress">{String(Math.min(photos.length + 1, PHOTO_COUNT)).padStart(2, "0")} / 04</div>
             <p>{settingSummary}</p>
           </div>
+          {renderFrameSelector()}
 
           <div className="camera-preview-card">
             <div className="camera-wrap">
