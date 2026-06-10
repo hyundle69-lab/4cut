@@ -89,7 +89,13 @@ const drawBlackFrame = (ctx) => {
 
 const drawBusinessFrame = (ctx) => {
   ctx.save();
-  ctx.fillStyle = "#111";
+  const metallicGradient = ctx.createLinearGradient(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  metallicGradient.addColorStop(0, "#001b2e");
+  metallicGradient.addColorStop(0.35, "#003f6b");
+  metallicGradient.addColorStop(0.55, "#0a6ea8");
+  metallicGradient.addColorStop(1, "#002e4f");
+
+  ctx.fillStyle = metallicGradient;
   ctx.beginPath();
   ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
   PHOTO_SLOTS.forEach((slot) => {
@@ -97,10 +103,42 @@ const drawBusinessFrame = (ctx) => {
   });
   ctx.fill("evenodd");
 
-  ctx.fillStyle = "#f7f7f3";
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  PHOTO_SLOTS.forEach((slot) => {
+    ctx.rect(slot.x, slot.y, slot.width, slot.height);
+  });
+  ctx.clip("evenodd");
+
+  const sideHighlight = ctx.createLinearGradient(0, 0, FRAME_WIDTH, 0);
+  sideHighlight.addColorStop(0, "rgba(255, 255, 255, 0)");
+  sideHighlight.addColorStop(0.18, "rgba(255, 255, 255, 0.13)");
+  sideHighlight.addColorStop(0.36, "rgba(255, 255, 255, 0.02)");
+  sideHighlight.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = sideHighlight;
+  ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+
+  const glossyReflection = ctx.createLinearGradient(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  glossyReflection.addColorStop(0, "rgba(255, 255, 255, 0)");
+  glossyReflection.addColorStop(0.42, "rgba(255, 255, 255, 0.1)");
+  glossyReflection.addColorStop(0.57, "rgba(255, 255, 255, 0.02)");
+  glossyReflection.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = glossyReflection;
+  ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+  ctx.restore();
+
+  ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
-  ctx.font = "600 34px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 78, 4);
+  ctx.font = "400 42px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 74, 1.5);
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(FRAME_WIDTH / 2 - 18, 92);
+  ctx.lineTo(FRAME_WIDTH / 2 + 18, 92);
+  ctx.stroke();
   ctx.restore();
 };
 
@@ -166,8 +204,8 @@ const FRAME_PRESETS = {
     titleText: "ASCE+",
     subtitleText: "",
     styleClass: "frame-business",
-    borderColor: "#f7f7f3",
-    backgroundColor: "#111",
+    borderColor: "#ffffff",
+    backgroundColor: "#003f6b",
     draw: drawBusinessFrame,
   },
   school: {
