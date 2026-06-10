@@ -14,7 +14,7 @@ const CAPTURE_SIZE = 600;
 const CAMERA_ZOOM_FACTOR = 1.35;
 const FRAME_WIDTH = 600;
 const FRAME_LAYOUT = {
-  headerHeight: 64,
+  headerHeight: 128,
   footerHeight: 64,
   photoAreaHeight: 2144,
   photoGap: 24,
@@ -89,7 +89,7 @@ const drawBlackFrame = (ctx) => {
   ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
   ctx.textAlign = "center";
   ctx.font = "400 14px Inter, Arial, sans-serif";
-  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 38, 5);
+  drawTrackingText(ctx, "PHOTO SESSION", FRAME_WIDTH / 2, 72, 5);
   ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
   ctx.font = "400 20px Inter, Arial, sans-serif";
   drawTrackingText(ctx, "MOMENTS", FRAME_WIDTH / 2, FRAME_HEIGHT - 24, 8);
@@ -139,14 +139,14 @@ const drawBusinessFrame = (ctx) => {
 
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
-  ctx.font = "400 34px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 42, 1.5);
+  ctx.font = "400 42px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "ASCE+", FRAME_WIDTH / 2, 74, 1.5);
 
   ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(FRAME_WIDTH / 2 - 18, 56);
-  ctx.lineTo(FRAME_WIDTH / 2 + 18, 56);
+  ctx.moveTo(FRAME_WIDTH / 2 - 18, 92);
+  ctx.lineTo(FRAME_WIDTH / 2 + 18, 92);
   ctx.stroke();
   ctx.restore();
 };
@@ -185,16 +185,16 @@ const drawSchoolFrame = (ctx) => {
   ctx.strokeStyle = "rgba(180, 160, 120, 0.35)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(FRAME_WIDTH * 0.275, 56);
-  ctx.lineTo(FRAME_WIDTH * 0.725, 56);
+  ctx.moveTo(FRAME_WIDTH * 0.275, 98);
+  ctx.lineTo(FRAME_WIDTH * 0.725, 98);
   ctx.stroke();
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#25211b";
-  ctx.font = "500 20px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "Toyo University", FRAME_WIDTH / 2, 26, 1.2);
-  ctx.font = "400 14px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
-  drawTrackingText(ctx, "Koreans", FRAME_WIDTH / 2, 44, 2);
+  ctx.font = "500 22px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Toyo University", FRAME_WIDTH / 2, 56, 1.2);
+  ctx.font = "400 16px Playfair Display, Cormorant Garamond, Libre Baskerville, Times New Roman, serif";
+  drawTrackingText(ctx, "Koreans", FRAME_WIDTH / 2, 78, 2);
   ctx.restore();
 };
 
