@@ -357,6 +357,7 @@ export default function App() {
       if (videoRef.current) {
         streamRef.current = stream;
         videoRef.current.srcObject = stream;
+        await videoRef.current.play?.();
       } else {
         stream.getTracks?.().forEach((track) => track.stop());
       }
@@ -535,6 +536,15 @@ export default function App() {
     clearCaptureState();
   };
 
+  const retakePhotos = () => {
+    clearCaptureState();
+    setView("capture");
+    stopCamera();
+    requestAnimationFrame(() => {
+      startCamera();
+    });
+  };
+
   const goHome = () => {
     clearCaptureState();
     setView("home");
@@ -675,7 +685,7 @@ export default function App() {
           <div className="result-actions">
             <button className="button accent" onClick={() => downloadImage(mergedImage)}>SAVE</button>
             <button className="button primary" onClick={shareImage}>SHARE</button>
-            <button className="button gray" onClick={resetPhotos}>RETAKE</button>
+            <button className="button gray" onClick={retakePhotos}>RETAKE</button>
             <button className="button soft" onClick={goHome}>HOME</button>
           </div>
         </section>
